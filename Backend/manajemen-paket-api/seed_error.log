@@ -1,0 +1,17 @@
+D:\Restu Satrio Pinanggih\Website\Manajemen Paket\Backend\manajemen-paket-api\node_modules\@neondatabase\serverless\index.js:1272
+authToken:u,disableWarningInBrowsers:c}={}){if(!r)throw new Error("No database connection string was\
+                                                        ^
+
+Error: No database connection string was provided to `neon()`. Perhaps an environment variable has not been set?
+    at neon (D:\Restu Satrio Pinanggih\Website\Manajemen Paket\Backend\manajemen-paket-api\node_modules\@neondatabase\serverless\index.js:1272:57)
+    at <anonymous> (D:\Restu Satrio Pinanggih\Website\Manajemen Paket\Backend\manajemen-paket-api\lib\db\index.ts:5:13)
+    at Object.<anonymous> (D:\Restu Satrio Pinanggih\Website\Manajemen Paket\Backend\manajemen-paket-api\lib\db\index.ts:6:42)
+    at Module._compile (node:internal/modules/cjs/loader:1565:14)
+    at Object.transformer (C:\Users\BPS1200\AppData\Local\npm-cache\_npx\fd45a72a545557e9\node_modules\tsx\dist\register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1318:32)
+    at Function._load (node:internal/modules/cjs/loader:1128:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:219:24)
+    at Module.require (node:internal/modules/cjs/loader:1340:12)
+
+Node.js v22.12.0
