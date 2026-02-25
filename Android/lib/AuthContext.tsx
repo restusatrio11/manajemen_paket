@@ -135,7 +135,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await saveSecureItem('bps_paket_user', JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
-    router.replace('/(tabs)');
+    
+    // Switch routing intercept based on onboarding completion status
+    const onboardingShown = await getSecureItem('bps_onboarding_shown');
+    if (onboardingShown !== 'true') {
+      router.replace('/onboarding');
+    } else {
+      router.replace('/(tabs)');
+    }
   };
 
   const logout = async () => {

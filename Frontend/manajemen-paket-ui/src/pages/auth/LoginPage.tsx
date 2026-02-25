@@ -40,6 +40,7 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md w-full">
+      {/* <img src="/logo.png" alt="Logo Paket BPS" className="w-20 md:w-24 mb-6 drop-shadow-sm" /> */}
       <h2 className="text-3xl font-extrabold text-slate-900 mb-2">Selamat Datang</h2>
       <p className="text-slate-500 mb-8">
         Silakan masuk untuk mengakses dashboard manajemen paket.

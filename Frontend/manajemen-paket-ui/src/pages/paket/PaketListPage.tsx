@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '@/services/api';
 import { formatDate } from '@/lib/utils';
@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
 import { 
   Search, Plus, 
-  ChevronLeft, ChevronRight, Download, X
+  ChevronLeft, ChevronRight, Download, X,
+  AlertCircle, PackageSearch, Edit2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
@@ -96,16 +97,55 @@ export default function PaketMasukList() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [ekspedisiList, setEkspedisiList] = useState<any[]>([]);
+  const [platformList, setPlatformList] = useState<any[]>([]);
   const [ekspedisiFilter, setEkspedisiFilter] = useState<string>('semua');
+  
   const [detailModal, setDetailModal] = useState<any>(null);
+  
+  // States for Edit Modal
+  const [editModal, setEditModal] = useState<any>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editPegawaiQuery, setEditPegawaiQuery] = useState('');
+  const [editPegawaiResults, setEditPegawaiResults] = useState<any[]>([]);
+  const [showEditDropdown, setShowEditDropdown] = useState(false);
+  const editDropdownRef = useRef<HTMLDivElement>(null);
+
   const [confirmModal, setConfirmModal] = useState<{isOpen: boolean, action: 'ambil' | 'delete', id: number | null, title: string, message: string}>({ isOpen: false, action: 'ambil', id: null, title: '', message: '' });
 
   useEffect(() => {
-    // Fetch master ekspedisi untuk dropdown filter
-    api.get('/master/ekspedisi').then(res => {
-      if (res.data.success) setEkspedisiList(res.data.data);
+    // Fetch master ekspedisi & platform
+    Promise.all([
+      api.get('/master/ekspedisi'),
+      api.get('/master/platform')
+    ]).then(([resEks, resPlat]) => {
+      if (resEks.data.success) setEkspedisiList(resEks.data.data);
+      if (resPlat.data.success) setPlatformList(resPlat.data.data);
     }).catch(console.error);
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (editDropdownRef.current && !editDropdownRef.current.contains(event.target as Node)) {
+        setShowEditDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (editPegawaiQuery.trim().length > 2 && editModal && !editModal.changed_nip) {
+        api.get(`/master/pegawai?q=${editPegawaiQuery}`)
+           .then(res => {
+              setEditPegawaiResults(res.data.data);
+              setShowEditDropdown(true);
+           });
+      } else if (!editModal?.changed_nip) {
+        setEditPegawaiResults([]);
+        setShowEditDropdown(false);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [editPegawaiQuery, editModal?.changed_nip]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -174,6 +214,40 @@ export default function PaketMasukList() {
     } catch (error) {
        toast.error(`Gagal ${confirmModal.action === 'ambil' ? 'memperbarui status' : 'menghapus'} paket`);
     }
+  };
+
+  const openEditModal = (item: any) => {
+    setEditModal({
+      id: item.id,
+      ekspedisi_id: item.ekspedisi_id || '',
+      platform_id: item.platform_id || '',
+      nip_pegawai: item.nip_pegawai || '',
+      changed_nip: item.nip_pegawai || ''
+    });
+    setEditPegawaiQuery(item.nip_pegawai);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
+     if (!editModal.ekspedisi_id || !editModal.platform_id || !editModal.changed_nip) {
+        return toast.error("Harap lengkapi kurir, platform, dan karyawan penerima.");
+     }
+     
+     setEditLoading(true);
+     try {
+        await api.put(`/paket/${editModal.id}`, {
+           ekspedisi_id: editModal.ekspedisi_id,
+           platform_id: editModal.platform_id,
+           nip_pegawai: editModal.changed_nip
+        });
+        toast.success("Berhasil memperbarui data paket");
+        setEditModal(null);
+        fetchPackages();
+     } catch (err: any) {
+        toast.error("Gagal memperbarui paket: " + (err.response?.data?.message || err.message));
+     } finally {
+        setEditLoading(false);
+     }
   };
 
   const handleExport = () => {
@@ -330,6 +404,7 @@ export default function PaketMasukList() {
                              </Button>
                            )}
                            <Button variant="outline" size="sm" onClick={() => setDetailModal(item)} className="text-bps-blue border-bps-blue/30 hover:bg-bps-light">Detail</Button>
+                           <Button variant="outline" size="sm" onClick={() => openEditModal(item)} className="text-orange-600 border-orange-200 hover:bg-orange-50 hover:border-orange-300">Edit</Button>
                            <Button variant="outline" size="sm" onClick={() => confirmDelete(item.id)} className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300">Hapus</Button>
                          </div>
                       </td>
@@ -461,6 +536,117 @@ export default function PaketMasukList() {
           </div>
         </div>
       )}
+
+      {/* Edit Modal */}
+      {editModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
+             <div className="p-4 border-b flex justify-between items-center bg-slate-50">
+                <h3 className="font-semibold text-lg text-slate-800">Ubah Data Paket PKG-{detailModal?.id ? detailModal.id.toString().padStart(6, '0') : ''}</h3>
+                <Button variant="ghost" size="icon" onClick={() => setEditModal(null)} className="h-8 w-8 text-slate-500 hover:text-red-500">
+                   <X size={18} />
+                </Button>
+             </div>
+             <form onSubmit={handleEditSubmit} className="flex flex-col flex-1 overflow-visible">
+               <div className="p-6 space-y-5 flex-1 overflow-y-visible">
+                  
+                  <div className="space-y-1.5" ref={editDropdownRef as any}>
+                     <label className="text-sm font-semibold text-slate-700">Penerima (NIP / Nama)</label>
+                     <div className="flex gap-2 relative">
+                        <Input 
+                          icon={PackageSearch} 
+                          placeholder="Ketik min 3 huruf (NIP/Nama)..." 
+                          className={`w-full ${editModal.changed_nip ? 'ring-2 ring-green-500/20 border-green-500 bg-green-50/50' : ''}`}
+                          value={editPegawaiQuery}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                             setEditPegawaiQuery(e.target.value);
+                             if (editModal.changed_nip) setEditModal({ ...editModal, changed_nip: '' });
+                          }}
+                          onFocus={() => {
+                            if (editPegawaiResults.length > 0 && !editModal.changed_nip) setShowEditDropdown(true);
+                          }}
+                        />
+                        {editModal.changed_nip && (
+                           <Button type="button" variant="ghost" size="icon" className="shrink-0 text-slate-400 hover:text-red-500 absolute right-2 top-1/2 -translate-y-1/2" onClick={() => {
+                              setEditModal({ ...editModal, changed_nip: '' });
+                              setEditPegawaiQuery('');
+                              setEditPegawaiResults([]);
+                           }}>
+                             <X size={18} />
+                           </Button>
+                        )}
+                     </div>
+
+                     {showEditDropdown && (
+                       <div className="absolute z-50 mt-1 w-[calc(100%-48px)] bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                          {editPegawaiResults.length === 0 ? (
+                             <div className="p-3 text-sm text-slate-500 text-center">
+                                {editPegawaiQuery.length > 2 ? 'Pencarian tidak menemukan hasil...' : 'Ketik untuk mencari...'}
+                             </div>
+                          ) : (
+                            editPegawaiResults.map(p => (
+                               <div 
+                                  key={p.nip} 
+                                  className="p-3 hover:bg-slate-50 cursor-pointer border-b last:border-0"
+                                  onClick={() => {
+                                     setEditModal({ ...editModal, changed_nip: p.nip });
+                                     setEditPegawaiQuery(`${p.nip} - ${p.nama}`);
+                                     setShowEditDropdown(false);
+                                  }}
+                               >
+                                  <div className="font-medium text-slate-800 text-sm">{p.nama}</div>
+                                  <div className="text-xs text-slate-500 mt-0.5">{p.nip} • {p.jabatan}</div>
+                               </div>
+                            ))
+                          )}
+                       </div>
+                     )}
+                     
+                     {editModal.changed_nip && (
+                        <p className="text-xs text-green-600 font-medium mt-1.5 inline-flex items-center gap-1">
+                           <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Terpilih: {editModal.changed_nip}
+                        </p>
+                     )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-semibold text-slate-700">Ekspedisi / Kurir</label>
+                        <select 
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          value={editModal.ekspedisi_id}
+                          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setEditModal({ ...editModal, ekspedisi_id: e.target.value })}
+                        >
+                           <option value="">Pilih kurir...</option>
+                           {ekspedisiList.map(eksp => <option key={eksp.id} value={eksp.id}>{eksp.nama_ekspedisi}</option>)}
+                        </select>
+                      </div>
+                      
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-semibold text-slate-700">Platform Asal</label>
+                        <select 
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          value={editModal.platform_id}
+                          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setEditModal({ ...editModal, platform_id: e.target.value })}
+                        >
+                           <option value="">Pilih platform...</option>
+                           {platformList.map(p => <option key={p.id} value={p.id}>{p.nama_platform}</option>)}
+                        </select>
+                      </div>
+                  </div>
+               </div>
+               
+               <div className="p-4 border-t bg-slate-50 flex justify-end gap-3 mt-auto">
+                  <Button type="button" variant="outline" className="text-slate-600" onClick={() => setEditModal(null)}>Batal</Button>
+                  <Button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white" disabled={editLoading}>
+                     {editLoading ? 'Menyimpan...' : 'Simpan Perubahan'}
+                  </Button>
+               </div>
+             </form>
+          </div>
+        </div>
+      )}
+
 
     </div>
   );

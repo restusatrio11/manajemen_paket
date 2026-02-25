@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { master_ekspedisi, paket_masuk } from '@/lib/db/schema';
 import { eq, sql, desc, and } from 'drizzle-orm';
+import { getPegawaiByNip } from '@/lib/api-ext';
 
 // GET /api/paket/stats — statistik dashboard
 export async function GET(request: NextRequest) {
@@ -58,21 +59,77 @@ export async function GET(request: NextRequest) {
       top_ekspedisi.push({ id: 0, nama: 'Lainnya', count: lainnyaCount });
     }
 
-    // Tren 7 hari terakhir masuk (untuk global filter, kita tampilkan tren 7 atau max hari di range tersebut, tapi query ini menggunakan data 7 hari terakhir secara default, kita biarkan saja absolute atau kita limit di backend. Lebih baik mengikuti filter bulanan jika ada)
     let trenWhere = sql`waktu_diterima >= CURRENT_DATE - INTERVAL '7 days'`;
     if (baseWhere) {
-      trenWhere = baseWhere; // jika ada filter, tampilkan chart harian selama bulan tersebut
+      trenWhere = baseWhere; 
     }
 
-    const trenHarian = await db
+    // Agregasi Harian: Masuk
+    const trenMasuk = await db
       .select({
         tanggal: sql<string>`TO_CHAR(waktu_diterima, 'YYYY-MM-DD')`,
         count: sql<number>`COUNT(*)::int`
       })
       .from(paket_masuk)
       .where(trenWhere)
-      .groupBy(sql`TO_CHAR(waktu_diterima, 'YYYY-MM-DD')`)
-      .orderBy(sql`TO_CHAR(waktu_diterima, 'YYYY-MM-DD')`);
+      .groupBy(sql`TO_CHAR(waktu_diterima, 'YYYY-MM-DD')`);
+
+    // Agregasi Harian: Diambil
+    let trenDiambilWhere = sql`waktu_diambil >= CURRENT_DATE - INTERVAL '7 days' AND waktu_diambil IS NOT NULL`;
+    if (month && year) {
+        trenDiambilWhere = sql`EXTRACT(MONTH FROM waktu_diambil) = ${Number(month)} AND EXTRACT(YEAR FROM waktu_diambil) = ${Number(year)} AND waktu_diambil IS NOT NULL`;
+    }
+
+    const trenDiambil = await db
+      .select({
+        tanggal: sql<string>`TO_CHAR(waktu_diambil, 'YYYY-MM-DD')`,
+        count: sql<number>`COUNT(*)::int`
+      })
+      .from(paket_masuk)
+      .where(trenDiambilWhere)
+      .groupBy(sql`TO_CHAR(waktu_diambil, 'YYYY-MM-DD')`);
+
+    // Merge both arrays by Date
+    const harianMap = new Map<string, any>();
+    
+    trenMasuk.forEach(row => {
+      harianMap.set(row.tanggal, { tanggal: row.tanggal, count_masuk: row.count, count_diambil: 0 });
+    });
+    
+    trenDiambil.forEach(row => {
+      if (harianMap.has(row.tanggal)) {
+        harianMap.get(row.tanggal).count_diambil = row.count;
+      } else {
+        harianMap.set(row.tanggal, { tanggal: row.tanggal, count_masuk: 0, count_diambil: row.count });
+      }
+    });
+
+    const trenHarian = Array.from(harianMap.values()).sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+
+
+    // Top 5 Pegawai Terbanyak
+    const topPegawaiRaw = await db
+      .select({
+        nip: paket_masuk.nip_pegawai,
+        count: sql<number>`COUNT(*)::int`
+      })
+      .from(paket_masuk)
+      .where(baseWhere)
+      .groupBy(paket_masuk.nip_pegawai)
+      .orderBy(desc(sql`COUNT(*)`))
+      .limit(5);
+
+    const topPegawai = await Promise.all(
+      topPegawaiRaw.map(async (row) => {
+        const peg = await getPegawaiByNip(row.nip);
+        return {
+          nip: row.nip,
+          nama: peg ? (peg.nama_lengkap || peg.nama) : 'Pegawai Tidak Diketahui',
+          foto: peg?.foto_url || null,
+          count: row.count
+        };
+      })
+    );
 
     return NextResponse.json({
       success: true,
@@ -82,7 +139,8 @@ export async function GET(request: NextRequest) {
         sudah_diambil: Number(sudahDiambil.count),
         masuk_hari_ini: Number(hariIni.count),
         top_ekspedisi,
-        tren_harian: trenHarian
+        tren_harian: trenHarian,
+        top_pegawai: topPegawai
       },
     });
   } catch (error) {

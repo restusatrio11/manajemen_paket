@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Edit2, AppWindow, Info, Bell, Lock, LogOut, Briefcase } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/lib/AuthContext';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ProfilScreen() {
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function ProfilScreen() {
               {user?.foto ? (
                 <Image source={{ uri: user.foto }} className="w-full h-full" resizeMode="cover" />
               ) : (
-                <Text className="text-4xl">👨‍💼</Text> // Fallback
+                <Ionicons name="person" size={40} />
               )}
             </View>
             <TouchableOpacity className="absolute bottom-0 right-0 bg-blue-600 w-8 h-8 rounded-full items-center justify-center border-2 border-white">
@@ -53,10 +54,10 @@ export default function ProfilScreen() {
           <Text className="text-2xl font-bold text-slate-900 mb-1">{user?.nama || user?.username || 'Memuat...'}</Text>
           <Text className="text-blue-600 font-medium text-sm mb-3 uppercase tracking-wider">{user?.role || 'Akses Terbatas'}</Text>
           
-          <View className="bg-slate-100 px-4 py-2 rounded-full flex-row items-center">
+          {/* <View className="bg-slate-100 px-4 py-2 rounded-full flex-row items-center">
             <Briefcase size={14} color="#64748b" className="mr-2" />
             <Text className="text-slate-500 text-xs font-bold">NIP: {user?.nip || '-'}</Text>
-          </View>
+          </View> */}
         </View>
 
         {/* Informasi Aplikasi */}
@@ -69,7 +70,7 @@ export default function ProfilScreen() {
               </View>
               <Text className="text-slate-700 font-medium">Nama Aplikasi</Text>
             </View>
-            <Text className="text-slate-900 font-bold text-sm">BPS Paket</Text>
+            <Text className="text-slate-900 font-bold text-sm">Paket Wak</Text>
           </View>
 
           <View className="flex-row items-center justify-between p-4">
@@ -80,13 +81,13 @@ export default function ProfilScreen() {
               <Text className="text-slate-700 font-medium">Versi</Text>
             </View>
             <View className="bg-slate-100 px-3 py-1 rounded-lg">
-              <Text className="text-slate-500 font-medium text-xs">v1.2.0</Text>
+              <Text className="text-slate-500 font-medium text-xs">v1.0.0</Text>
             </View>
           </View>
         </View>
 
         {/* Umum */}
-        <Text className="text-slate-500 font-bold text-xs tracking-wider mb-3">UMUM</Text>
+        {/* <Text className="text-slate-500 font-bold text-xs tracking-wider mb-3">UMUM</Text>
         <View className="bg-white rounded-2xl border border-slate-100 shadow-sm shadow-slate-100 mb-8 overflow-hidden">
           <TouchableOpacity className="flex-row items-center justify-between p-4 border-b border-slate-100">
             <View className="flex-row items-center">
@@ -107,7 +108,7 @@ export default function ProfilScreen() {
             </View>
             <Text className="text-slate-300 font-bold text-lg">{'>'}</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Keluar */}
         <TouchableOpacity 
@@ -119,7 +120,11 @@ export default function ProfilScreen() {
         </TouchableOpacity>
 
         <Text className="text-center text-slate-400 text-xs mb-10">
-          © 2024 Badan Pusat Statistik
+          © 2026 BPS Provinsi Sumatera Utara
+          
+        </Text>
+        <Text className="text-center text-slate-400 text-xs mb-10">
+          made with 💖 by R35TOE
         </Text>
       </ScrollView>
     </SafeAreaView>

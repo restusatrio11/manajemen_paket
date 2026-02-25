@@ -39,7 +39,7 @@ export default function DashboardPage() {
 
   const dataMingguan = (stats.tren_harian || []).map((item: any) => ({
     name: new Date(item.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
-    value: item.count
+    value: item.count_masuk
   }));
 
   const dataTren = (stats.tren_harian || []).map((item: any) => {
@@ -47,7 +47,8 @@ export default function DashboardPage() {
     const dayName = d.toLocaleDateString('id-ID', { weekday: 'short' });
     return {
       day: dayName,
-      current: item.count,
+      current: item.count_masuk,
+      taken: item.count_diambil
     };
   });
 
@@ -223,28 +224,65 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Tren Waktu Line Chart */}
-      <Card className="shadow-sm border-slate-200">
-          <CardHeader className="p-6 pb-2 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg">Tren Masuk vs Target (Bulan Ini)</CardTitle>
-              <p className="text-sm text-slate-500 font-normal mt-1">Grafik pergerakan paket masuk harian.</p>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Tren Waktu Line Chart */}
+        <Card className="col-span-1 lg:col-span-2 shadow-sm border-slate-200">
+            <CardHeader className="p-6 pb-2 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">Tren Masuk vs Diambil (Bulan Ini)</CardTitle>
+                <p className="text-sm text-slate-500 font-normal mt-1">Perbandingan paket masuk dan pengambilannya per hari.</p>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 pt-4 h-[250px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={dataTren} margin={{ top: 5, right: 30, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
+                  <Tooltip cursor={{stroke: '#cbd5e1', strokeWidth: 1}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                  
+                  {/* Current week lines */}
+                  <Line type="monotone" name="Paket Masuk" dataKey="current" stroke="#0b5ed7" strokeWidth={3} dot={{r: 4, fill: '#0b5ed7', strokeWidth: 0}} activeDot={{ r: 6 }} />
+                  <Line type="monotone" name="Paket Diambil" dataKey="taken" stroke="#22c55e" strokeWidth={3} dot={{r: 4, fill: '#22c55e', strokeWidth: 0}} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+        </Card>
+
+        {/* Top 5 Pegawai */}
+        <Card className="col-span-1 shadow-sm border-slate-200">
+          <CardHeader className="p-6 pb-2">
+            <CardTitle className="text-lg">Duta M-A-L (Top 5 Penerima Paket)</CardTitle>
           </CardHeader>
-          <CardContent className="p-6 pt-4 h-[250px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={dataTren} margin={{ top: 5, right: 30, left: -20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                <Tooltip cursor={{stroke: '#cbd5e1', strokeWidth: 1}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
-                
-                {/* Current week line */}
-                <Line type="monotone" name="Paket Masuk" dataKey="current" stroke="#0b5ed7" strokeWidth={3} dot={{r: 4, fill: '#0b5ed7', strokeWidth: 0}} activeDot={{ r: 6 }} />
-              </LineChart>
-            </ResponsiveContainer>
+          <CardContent className="p-6 pt-4 h-[250px] overflow-y-auto">
+             <div className="space-y-4">
+                {(stats.top_pegawai || []).map((peg: any) => (
+                  <div key={peg.nip} className="flex items-center gap-3">
+                     <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0">
+                       {peg.foto ? (
+                         <img src={peg.foto} alt={peg.nama} className="w-full h-full object-cover" />
+                       ) : (
+                         <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-sm">
+                           {peg.nama.substring(0, 2).toUpperCase()}
+                         </div>
+                       )}
+                     </div>
+                     <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-slate-800 truncate">{peg.nama}</p>
+                        <p className="text-xs text-slate-500 truncate">{peg.nip}</p>
+                     </div>
+                     <div className="bg-bps-blue/10 text-bps-blue px-2 py-1 rounded-md text-xs font-bold">
+                        {peg.count} Box
+                     </div>
+                  </div>
+                ))}
+                {(!stats.top_pegawai || stats.top_pegawai.length === 0) && (
+                   <div className="text-center text-slate-400 text-sm mt-8">Belum ada data</div>
+                )}
+             </div>
           </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -61,11 +61,11 @@ export default function DashboardLayout() {
       {/* Sidebar Kiri */}
       <aside className="w-64 bg-white border-r flex flex-col hidden md:flex sticky top-0 h-screen print:hidden">
         <div className="p-6 flex items-center gap-3">
-          <div className="bg-bps-blue p-2 rounded-lg text-white">
-            <Package size={20} />
+          <div className="w-8 h-8 object-contain mr-1">
+            <img src="/logo.png" alt="Paket Wak Logo" className="w-full h-full" />
           </div>
           <div>
-            <h1 className="font-bold text-slate-800">Paket BPS</h1>
+            <h1 className="font-bold text-slate-800">Paket Wak</h1>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Admin Keamanan</p>
           </div>
         </div>
@@ -202,7 +202,7 @@ export default function DashboardLayout() {
                         </div>
                         <div className="space-y-2">
                            <h3 className="text-2xl font-bold text-slate-800">Aplikasi Manajemen Paket</h3>
-                           <p className="text-slate-600">Badan Pusat Statistik (BPS)</p>
+                           <p className="text-slate-600">BPS Provinsi Sumatera Utara (BPS)</p>
                            <div className="inline-flex items-center gap-2 bg-slate-100 px-3 py-1 rounded-full text-xs font-semibold text-slate-600">
                               <span>Versi 1.0.0</span>
                               <span className="w-1 h-1 bg-slate-400 rounded-full"></span>
@@ -212,10 +212,10 @@ export default function DashboardLayout() {
                      </div>
                      <div className="space-y-2 pt-4">
                         <p className="text-sm text-slate-600">
-                           Sistem ini dirancang untuk mempermudah pencatatan, pemantauan, dan manajemen lalu lintas penerimaan paket di lingkungan kerja Badan Pusat Statistik. Dibuat khusus untuk mendukung kinerja petugas keamanan dan efisiensi pelaporan logistik.
+                           Sistem ini dirancang untuk mempermudah pencatatan, pemantauan, dan manajemen lalu lintas penerimaan paket di lingkungan kerja BPS Provinsi Sumatera Utara. Dibuat khusus untuk mendukung kinerja petugas keamanan dan efisiensi pelaporan logistik.
                         </p>
                         <p className="text-sm text-slate-500 font-medium">
-                           © 2026 Badan Pusat Statistik. Hak Cipta Dilindungi.
+                           © 2026 BPS Provinsi Sumatera Utara. Hak Cipta Dilindungi.
                         </p>
                      </div>
                    </div>

@@ -1,6 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Package } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 export default function AuthLayout() {
@@ -20,12 +19,12 @@ export default function AuthLayout() {
       {/* Kolom Kiri - Form */}
       <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-24 bg-white">
         <div className="flex items-center gap-3 mb-12">
-          <div className="bg-bps-blue p-2 rounded-lg text-white">
-            <Package size={24} />
+          <div className="w-10 h-10 object-contain">
+            <img src="/logo.png" alt="Paket Wak Logo" className="w-full h-full" />
           </div>
           <div>
             <h1 className="font-bold text-bps-blue text-lg leading-tight">Sistem Paket</h1>
-            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Badan Pusat Statistik</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">BPS Provinsi Sumatera Utara</p>
           </div>
         </div>
         
@@ -33,7 +32,7 @@ export default function AuthLayout() {
 
         <div className="mt-auto pt-16">
           <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Badan Pusat Statistik. Hak Cipta Dilindungi Undang-Undang.
+            © {new Date().getFullYear()} BPS Provinsi Sumatera Utara. Hak Cipta Dilindungi Undang-Undang.
           </p>
         </div>
       </div>
@@ -51,15 +50,15 @@ export default function AuthLayout() {
                 <span className="text-orange-500">🔔</span> Notifikasi Real-time
              </div>
              
-             <Package size={100} className="text-bps-blue opacity-90" />
+             <img src="/logo.png" alt="Ilustrasi Paket Wak" className="w-48 h-48 object-contain opacity-90" />
              
              <div className="absolute -bottom-4 right-4 bg-white shadow-md border rounded-md px-3 py-1 flex items-center gap-2 text-sm font-medium z-20 rotate-[2deg]">
                 <span className="text-green-500">✅</span> Aman & Terpercaya
              </div>
           </div>
-          <h2 className="text-3xl font-bold text-slate-800 mb-4">Manajemen Logistik Terintegrasi</h2>
+          <h2 className="text-3xl font-bold text-slate-800 mb-4">Manajemen Paket BPS Sumatera Utara</h2>
           <p className="text-slate-500 text-lg">
-            Sistem pemantauan paket masuk dan keluar untuk keamanan dan efisiensi operasional kantor BPS.
+            Sistem pemantauan paket untuk keamanan dan efisiensi operasional kantor BPS Provinsi Sumatera Utara.
           </p>
         </div>
       </div>

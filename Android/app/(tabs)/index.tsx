@@ -125,13 +125,13 @@ export default function HomeScreen() {
         {/* Header */}
         <View className="flex-row justify-between items-center mb-8 mt-2">
           <View>
-            <Text className="text-slate-500 text-sm mb-1">Selamat Pagi,</Text>
+            <Text className="text-slate-500 text-sm mb-1">Selamat Datang</Text>
             <Text className="text-2xl font-bold text-slate-900">Halo, {user?.nama_lengkap?.split(' ')[0] || 'Admin'}</Text>
           </View>
-          <TouchableOpacity className="relative p-2">
+          {/* <TouchableOpacity className="relative p-2">
             <Bell size={24} color="#334155" />
             <View className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Card Statistik */}
@@ -213,15 +213,13 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Floating Action Button */}
-      <View className="absolute bottom-6 right-6 shadow-lg shadow-blue-300">
-        <TouchableOpacity
-          onPress={handleTambahPaket}
-          className="w-14 h-14 bg-blue-600 rounded-full items-center justify-center p-0"
-          style={{ elevation: 5 }}
-        >
-          <Plus size={24} color="white" />
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        onPress={handleTambahPaket}
+        className="absolute bottom-6 right-6 w-14 h-14 bg-blue-600 rounded-full items-center justify-center p-0 shadow-lg shadow-blue-600"
+        style={{ elevation: 5 }}
+      >
+        <Plus size={24} color="white" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }

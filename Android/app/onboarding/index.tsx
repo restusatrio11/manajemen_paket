@@ -41,13 +41,13 @@ export default function OnboardingScreen() {
       setCurrentPage(nextPage);
     } else {
       await saveSecureItem('bps_onboarding_shown', 'true');
-      router.replace('/(auth)/login');
+      router.replace('/(tabs)');
     }
   };
 
   const skip = async () => {
     await saveSecureItem('bps_onboarding_shown', 'true');
-    router.replace('/(auth)/login');
+    router.replace('/(tabs)');
   };
 
   return (

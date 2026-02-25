@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, Image, ActivityIndicator, Alert, ToastAndroid, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ArrowLeft, CheckCircle2, Package, Truck, AppWindow, Clock, Image as ImageIcon, Trash2 } from 'lucide-react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ArrowLeft, CheckCircle2, Package, Truck, AppWindow, Clock, Image as ImageIcon, Trash2, Edit2 } from 'lucide-react-native';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import api from '@/lib/api';
 
 export default function DetailPaketScreen() {
@@ -28,9 +28,11 @@ export default function DetailPaketScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchDetail();
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchDetail();
+    }, [id])
+  );
 
   const processAmbil = async () => {
     setSubmitting(true);
@@ -257,6 +259,15 @@ export default function DetailPaketScreen() {
                 <Text className="text-white font-bold text-lg">Tandai Sudah Diambil</Text>
               </>
             )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            disabled={submitting}
+            onPress={() => router.push(`/paket/edit/${id}`)}
+            className={`w-full py-3 rounded-2xl flex-row justify-center items-center border border-orange-200 bg-orange-50 mb-3 ${submitting ? 'opacity-70' : ''}`}
+          >
+            <Edit2 color="#f97316" size={18} className="mr-2" />
+            <Text className="text-orange-500 font-bold text-base">Edit Detail Paket</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

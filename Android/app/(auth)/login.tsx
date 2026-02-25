@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Eye, EyeOff, Lock, User } from 'lucide-react-native';
@@ -58,10 +58,10 @@ export default function LoginScreen() {
           <View className="w-full max-w-sm mx-auto bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100">
             
             <View className="items-center mb-8">
-              <View className="w-20 h-20 bg-blue-50 rounded-2xl items-center justify-center mb-5 border border-blue-100">
-                <Text className="text-4xl shadow-sm">📦</Text>
+              <View className="w-20 h-20 bg-blue-50 rounded-2xl items-center justify-center mb-5 border border-blue-100 overflow-hidden">
+                <Image source={require('../../assets/images/icon.png')} className="w-16 h-16" resizeMode="contain" />
               </View>
-              <Text className="text-2xl font-black text-slate-900 mb-2 tracking-tight">Login BPS Paket</Text>
+              <Text className="text-2xl font-black text-slate-900 mb-2 tracking-tight">Login Paket Wak</Text>
               <Text className="text-slate-500 text-center text-sm leading-relaxed px-2">
                 Silakan masuk menggunakan NIP atau Username Anda
               </Text>

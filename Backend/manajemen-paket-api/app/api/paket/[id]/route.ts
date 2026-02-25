@@ -100,3 +100,39 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     return NextResponse.json({ success: false, message: 'Terjadi kesalahan server' }, { status: 500 });
   }
 }
+
+// PUT /api/paket/[id] — update paket
+export async function PUT(request: NextRequest, { params }: Params) {
+  try {
+    const role = request.headers.get('x-user-role');
+    if (!role) {
+      return NextResponse.json({ success: false, message: 'Tidak terautentikasi' }, { status: 401 });
+    }
+
+    const { id: paramId } = await params;
+    const id = parseInt(paramId);
+    if (isNaN(id)) return NextResponse.json({ success: false, message: 'ID tidak valid' }, { status: 400 });
+
+    const body = await request.json();
+    const { ekspedisi_id, platform_id, nip_pegawai } = body;
+
+    const [updated] = await db
+      .update(paket_masuk)
+      .set({
+        ekspedisi_id: ekspedisi_id ? Number(ekspedisi_id) : undefined,
+        platform_id: platform_id ? Number(platform_id) : undefined,
+        nip_pegawai: nip_pegawai || undefined,
+      })
+      .where(eq(paket_masuk.id, id))
+      .returning();
+
+    if (!updated) {
+      return NextResponse.json({ success: false, message: 'Paket tidak ditemukan' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: 'Paket berhasil diperbarui', data: updated });
+  } catch (error) {
+    console.error('[PUT /api/paket/[id]]', error);
+    return NextResponse.json({ success: false, message: 'Terjadi kesalahan server' }, { status: 500 });
+  }
+}
